@@ -1,5 +1,5 @@
 # Python Tutorials
-This repository has the Python scripts I had created while learning/developing Python.
+This repository has the Python scripts I had created while learning/developing program in Python.
 
 
 ## Useful Comamnds
@@ -34,3 +34,6 @@ pip uninstall twisted
 ##### To install a module downloaded, package should be unzipped if it is zipped
 python setup.py install
 pip install *.whl
+
+## Reference
+[CodingBat](https://codingbat.com/python)
