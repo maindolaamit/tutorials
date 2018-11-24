@@ -1,0 +1,4 @@
+"07/01/2018","NZD","BOA_101","BOA_101","123113010360800","2","045",,"11987495.94","07/01/2018","                ",,,,,"1","",
+"07/01/2018","NZD","BOA_NZ","BOA_NZ","123244003254700","2","399",,"146.16","07/01/2018","BROADWAY        ",,,,,"2","/ENTRY-01 JULFROM PHOENIX FIRE AN/MOTOR INN/BAI/399/MISCELLANEOUS CREDIT/ORDP/FROM PHOENIX FIRE AN/ACNO/1231430247581001                                                                                                 ",
+"07/01/2018","NZD","BOA_NZ","BOA_NZ","123244003254700","2","399",,"226.56","07/01/2018","BROADWAY        ",,,,,"3","/ENTRY-01 JULFROM PHOENIX FIRE AN/MOTOR INN/BAI/399/MISCELLANEOUS CREDIT/ORDP/FROM PHOENIX FIRE AN/ACNO/1231430247581001                                                                                                 ",
+"07/01/2018","NZD","BOA_NZ","BOA_NZ","123244003254700","2","045",,"1270708.56","07/01/2018","                ",,,,,"1","",
