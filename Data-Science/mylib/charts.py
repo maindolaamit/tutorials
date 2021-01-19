@@ -1,13 +1,48 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
 import numpy as np
+import sklearn
 
 
-def donut(df_col):
-    df_count = df_col.str.lower().value_counts()
-    # print(f"Number of spams : {df_count[0]} | No. of hams {df_count[1]}")
+def reset_rc():
+    """
+    Reset the matplotlib rc parameters
+    """
+    import matplotlib as mpl
+    mpl.rcParams.update(mpl.rcParamsDefault)
 
-    fig, ax = plt.subplots()
+
+def set_rc():
+    """
+    Set the RC parameters for matplotlib and set Seaborn settings
+    """
+    pd.set_option('display.max_colwidth', 100)
+    sns.set(style="ticks", color_codes=True)
+    plt.style.use('seaborn-whitegrid')
+
+    # Set Matplotlib defaults
+    plt.rc('figure', autolayout=True)
+    plt.rc('axes', labelweight='bold', labelsize='large',
+           titleweight='bold', titlesize=18, titlepad=10)
+
+    plt.rcParams['text.color'] = '#191c1b'
+    # plt.rcParams['axes.labelcolor']= '#ffaa80'
+    # plt.rcParams['xtick.color'] = '#e27caa'
+    # plt.rcParams['ytick.color'] = '#799fec'
+    # plt.rcParams['font.size']=12
+
+
+def donut(df_col, title=None, figsize=None):
+    """
+    Create a Donut chart for the given Pandas Series
+    :param figsize: Figure size
+    :param title: Title of the figure
+    :param df_col: Pandas Series
+    """
+    df_count = df_col.apply(str).str.lower().value_counts()
+
+    fig, ax = plt.subplots(figsize=figsize)
     colors = ['#66b3ff', '#99ff99', '#ffcc99']
     patches, text, autotext = ax.pie(df_count, labels=df_count.index, autopct='%1.1f%%',
                                      shadow=True, startangle=90)
@@ -18,16 +53,23 @@ def donut(df_col):
 
     # Equal aspect ratio ensures that pie is drawn as a circle
     ax.axis('equal')
-    title = f'Distribution of : {df_col.name.upper()}'
+    if title is None:
+        title = f'Distribution of {df_col.name.capitalize()}'
     plt.title(title, fontsize=17)
     plt.tight_layout()
     plt.show()
 
 
 def bi_donut(df_cols, sup_title):
-    fig, (ax1, ax2) = plt.subplots(
-        ncols=2, figsize=(15, 6), constrained_layout=False)
+    """
+    Creates two donut charts side by side for the passed DataFrame of two columns
+    :param df_cols: DataFrame
+    :param sup_title: Sup Title of the cart
+    """
+    fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(15, 6), constrained_layout=False)
     columns = df_cols.columns
+    if len(columns) < 2:
+        raise Exception("Number of columns less than 2.")
 
     for i in range(2):
         ax = ax1 if i == 0 else ax2
@@ -51,9 +93,18 @@ def bi_donut(df_cols, sup_title):
                  fontweight='bold', fontdict={'color': 'g'})
     _ = plt.show()
 
-def double_donut(grp_data):
-    from matplotlib import cm
+
+def stacked_donut(grp_data):
+    """
+    Creates a stacked Donut chart by grouping second column inside the first column
+    :param grp_data: Pandas Dataframe of two columns
+    """
+    columns = grp_data.columns
+    if len(columns) < 2:
+        raise Exception("Number of columns less than 2.")
+
     # Create groups and subgroups
+    from matplotlib import cm
     group_names = grp_data.index.levels[0].to_list()
     group_size = [grp_data[name].sum() for name in group_names]
     subgroup_names = [f"{x[1]}" for x in grp_data.index.values]
@@ -66,7 +117,7 @@ def double_donut(grp_data):
     grp_cmap = {group_names[i]: color_pallete[i]
                 for i in range(len(group_names))}
 
-    # Create color pallete for group and subgroups
+    # Create color palette for group and subgroups
     grp_colors = [grp_cmap[color](0.8) for color in grp_cmap.keys()]
     subgroup_colors = []
     for grp in grp_cmap.keys():
@@ -80,17 +131,30 @@ def double_donut(grp_data):
     mypie, _ = ax.pie(group_size, radius=1.3, labels=group_names, colors=grp_colors)
     plt.setp(mypie, width=0.3, edgecolor='white')
     # Second Ring (Inside)
-    mypie2, _ = ax.pie(subgroup_size, radius=1.3-0.3, labels=subgroup_names, labeldistance=0.7                           , colors=subgroup_colors)
+    mypie2, _ = ax.pie(subgroup_size, radius=1.3 - 0.3, labels=subgroup_names, labeldistance=0.7,
+                       colors=subgroup_colors)
     plt.setp(mypie2, width=.9, edgecolor='white')
     plt.margins(0, 0)
 
-       # show it
+    # show it
     plt.show()
 
-def violinplot(x, y, df, hue, title="Data Distribution", xlabel=None, ylabel=None, figsize=(12,8)):
+
+def strip_violinplot(x, y, df, hue, title="Data Distribution", xlabel=None, ylabel=None, figsize=(12, 8)):
+    """
+    Creates a Violinplot with stripplot showing the distribution density of data as well
+    :param x: X data
+    :param y: y data
+    :param df: Dataframe
+    :param hue: hue column to be used
+    :param title: Title of the plot
+    :param xlabel: X label name
+    :param ylabel: Y label name
+    :param figsize: figsize
+    """
     fig, ax = plt.subplots(figsize=figsize)
     ax = sns.stripplot(x=x, y=x, data=df
-                       ,hue=hue, jitter=0.2, size=2.5)
+                       , hue=hue, jitter=0.2, size=2.5)
     ax = sns.violinplot(x=x, y=y, data=df)
     if xlabel is None:
         xlabel = df[x].name
@@ -98,3 +162,143 @@ def violinplot(x, y, df, hue, title="Data Distribution", xlabel=None, ylabel=Non
         ylabel = df[y].name
     ax.set(title=title, xlabel=xlabel, ylabel=ylabel)
     _ = plt.show()
+
+
+def grouped_bar(df, title, figsize=(20, 8)):
+    """
+    Creates a beautiful Bar chart with groups
+    :param df: Dataframe
+    :param title: Title of the chart
+    :param figsize: Figure size
+    """
+    colors_list = ['#5cb85c', '#5bc0de', '#d9534f']
+    # Create graph with figure size 20,8 | width 0.8
+    ax = df.plot.bar(figsize=figsize, width=0.8, color=colors_list)
+    print('')
+    # Set Title with font size 16
+    plt.title(title, size=16)
+    # Shift Legend to upper right with font 14
+    plt.legend(loc='upper right', fontsize=14)
+    plt.xticks(fontsize=14, rotation=0)
+    # Hide Y axis values
+    ax.yaxis.set_major_locator(plt.NullLocator())
+
+    # Remove the borders
+    ax.spines['left'].set_color(None)
+    ax.spines['right'].set_color(None)
+    ax.spines['top'].set_color(None)
+
+    # Show Percentage on Yticks
+    value_format = "{:.1%}"
+    # Loop through the Rectangle objects of the plot to get the bars
+    for bar in ax.patches:
+        ax.text(bar.get_x() + bar.get_width() / 2 + .05,  # X position of text, start position + half width + margin
+                bar.get_height() + 1,  # Y position of text
+                f"{bar.get_height()}%",  # Text Value
+                fontsize=14,  # Fontsize of text
+                ha="center"  # Alignment of text
+                )
+
+    # Show plot
+    plt.show()
+
+
+def value_count_bar(data, title=None, normalize=True):
+    """
+    Plots a beautiful bar plot for the count of columns
+    :param data: Pandas Series
+    :param title: Title of the plot
+    :param normalize: If true distribution will be shown in normalized fashion
+    """
+    grp_data = data.value_counts(normalize=normalize).reset_index()
+    column_name = grp_data.columns[1]
+    grp_data.columns = [column_name, 'count']
+    fig, ax = plt.subplots(figsize=(12, 7))
+    ax = sns.barplot(x=column_name, y="count", data=grp_data, palette=sns.color_palette("tab10"))
+    if title is None:
+        title = f'Distribution of {column_name.capitalize()}'
+    ax.set(title=title, xlabel=column_name.capitalize(), ylabel=f'{column_name.capitalize()} count')
+
+    plt.xticks(fontsize=12, rotation=10)
+    ax.yaxis.set_major_locator(plt.NullLocator())
+    ax.spines['left'].set_color(None)
+    ax.spines['right'].set_color(None)
+    ax.spines['top'].set_color(None)
+
+    # Print values above the bar
+    for bar in ax.patches:
+        x_pos = bar.get_x() + bar.get_width() / 2
+        y_pos = bar.get_height() + bar.get_height() * .01
+        value = f"{bar.get_height() * 100:.2f} %" if normalize else round(bar.get_height())
+        ax.text(x_pos,  # X Position of the text
+                y_pos,  # Y Position of the text
+                value,  # Value to print above bar
+                fontsize=14,  # Fontsize
+                ha="center"  # Alignment of text
+                )
+    plt.show()
+
+
+def plot_confusion_matrix(cf_matrix_data, target_names,
+                          title='Confusion matrix'):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    from sklearn.metrics import confusion_matrix
+    df_cm = pd.DataFrame(cf_matrix_data, columns=target_names, index=target_names).astype('float')
+
+    df_cm.index.name = 'Actual'
+    df_cm.columns.name = 'Predicted'
+    plt.figure(figsize=(10, 5))
+    plt.title(title, color='green', fontsize=25)
+    tick_marks = np.arange(len(target_names))
+    plt.xticks(tick_marks, target_names, rotation=45, color='indigo')
+    plt.yticks(tick_marks, target_names, color='indigo')
+    sns.set(font_scale=1.4)  # for label size
+    sns.heatmap(df_cm, cmap="YlGnBu", annot=True, annot_kws={"size": 16}, fmt=".0f")
+    # plt.imshow(df_cm, interpolation='nearest', cmap="YlGnBu")
+    plt.tight_layout()
+    plt.ylabel('Actual', color='crimson', fontsize=20)
+    plt.xlabel('Predicted', color='crimson', fontsize=20)
+
+
+def print_confusion_matrix(model, X_test, y_test, target_names=None, title="Confusion Matrix"):
+    """ Method to print and plot Confusion matrix, F1 Score """
+    from sklearn.metrics import classification_report, confusion_matrix, f1_score
+    y_pred_classes = np.argmax(model.predict(X_test), axis=1)  # Multiclass classification
+    y_true_classes = np.argmax(y_test, axis=1)  # Multiclass classification
+    print(classification_report(y_true_classes, y_pred_classes, target_names=target_names))
+    plot_confusion_matrix(confusion_matrix(y_true_classes, y_pred_classes),
+                          target_names, title)
+
+
+def plot_loss_acc(history, train_score, test_score, batch_size=None):
+    """
+    Method to plot the Loss and Accurracy with the given History dataframe as input
+    """
+    history_df = pd.DataFrame(history.history)
+    # train_loss, train_accuracy = train_score[0], train_score[1]
+    # test_loss, test_accuracy = test_score[0], test_score[1]
+    print("----------------------------------------------------------")
+    print("\t          | Train | Test")
+    print("----------------------------------------------------------")
+    print(f"\tLoss      | {train_score[0]:.3f} | {test_score[0]:.3f}")
+    print(f"\tAccurracy | {train_score[1]:.3f} | {test_score[1]:.3f}")
+    print("----------------------------------------------------------")
+    # plot loss during training
+    fig, ax = plt.subplots(ncols=2)
+    fig.suptitle(f'Loss and Accurracy Graph\nBatch size {batch_size}', size=15)
+
+    ax[0].set_title('Loss')
+    ax[0].plot(history_df['loss'], label='train')
+    if 'val_loss' in history_df.columns:
+        ax[0].plot(history_df['val_loss'], label='test')
+    ax[0].legend()
+    # plot mse during training
+    ax[1].set_title('Accurracy')
+    ax[1].plot(history_df['accuracy'], label='train')
+    if 'val_accuracy' in history_df.columns:
+        ax[1].plot(history_df['val_accuracy'], label='test')
+    ax[1].legend()
+    plt.show()

@@ -1,26 +1,24 @@
-import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
+import os
+from glob import glob
 
-# Import the required libraries for text claning
-import string
-import re
-import nltk
 
-def get_data():
-    df = pd.read_csv("Tweets.csv")
-    # Drop unwanted columns
-    df.drop(axis=1, labels=['tweet_id','name','negativereason_gold','airline_sentiment_gold',
-                            'tweet_coord', 'tweet_created', 'tweet_location', 'user_timezone',
-                           'retweet_count']
-            , inplace=True)
-    df['negativereason_confidence'].fillna(0, inplace=True)
-    return df
+def get_dir_dataframe(path, pattern="*.csv"):
+    """
+    This methods reads all files in the given directory. Reads the file and return a Pandas DataFrame
+    concatenating all the files into a single df
+    :return: Pandas DataFrame
+    """
+    files = sorted(glob(f"{path}/{pattern}"))
+    df = pd.concat((pd.read_csv(file) for file in files), index=False)
     
+    return df
+
 
 def main():
     df = pd.read_csv("Tweets.csv")
     print(f"DataFrame shape, Rows :{df.shape[0]} Columns : {df.shape[1]}")
+
 
 if __name__ == '__main__':
     main()
