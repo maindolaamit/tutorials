@@ -1,7 +1,6 @@
 import re
 import string
 
-import emoji
 import nltk
 
 stopwords = nltk.corpus.stopwords.words('english')
@@ -55,6 +54,7 @@ def remove_emoji(text):
     :param text: Text to clean
     :return: Clean text
     """
+    import emoji
     return re.sub(r':', '', emoji.demojize(text))
 
 

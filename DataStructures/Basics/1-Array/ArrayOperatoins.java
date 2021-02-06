@@ -108,4 +108,36 @@ public class ArrayOperations {
         }
         System.out.println(String.format("Value not in the List  : %d", value));
     }
+
+    /**
+     * An array A consisting of N integers is given. Rotation of the array means that each element is shifted right
+     * by one index, and the last element of the array is moved to the first place. For example, the rotation of
+     * array A = [3, 8, 9, 7, 6] is [6, 3, 8, 9, 7] (elements are shifted right by one index and 6 is moved to the first place).
+     * <p>
+     * The goal is to rotate array A K times; that is, each element of A will be shifted to the right K times.
+     * <p>
+     * View problem at below link
+     * https://app.codility.com/programmers/lessons/2-arrays/cyclic_rotation/
+     **/
+    static int[] rotateArray(int[] A, int K) {
+        int length = A.length;
+        // Return null if empty array
+        if (length == 0) return null;
+
+        int[] newRange = new int[length];
+        // Change K to remainder, handel if rotation greater than length
+        int rotation = K > length ? K % length : K;
+        int pivot = length - rotation;
+
+        for (int i = 0; i < length; i++) {
+            newRange[i] = i < rotation ? length - rotation + i : pivot + i - length;
+        }
+
+        int[] rotatedArray = new int[length];
+        for (int i = 0; i < length; i++) {
+            rotatedArray[i] = A[newRange[i]];
+        }
+        // Return the Rotated array
+        return rotatedArray;
+    }
 }

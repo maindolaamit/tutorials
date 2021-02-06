@@ -27,6 +27,7 @@ def set_rc():
            titleweight='bold', titlesize=18, titlepad=10)
 
     plt.rcParams['text.color'] = '#191c1b'
+    purple_color = "#b753e6"
     # plt.rcParams['axes.labelcolor']= '#ffaa80'
     # plt.rcParams['xtick.color'] = '#e27caa'
     # plt.rcParams['ytick.color'] = '#799fec'
@@ -140,12 +141,12 @@ def stacked_donut(grp_data):
     plt.show()
 
 
-def strip_violinplot(x, y, df, hue, title="Data Distribution", xlabel=None, ylabel=None, figsize=(12, 8)):
+def strip_violinplot(data, x, y=None, hue=None, title="Data Distribution", xlabel=None, ylabel=None, figsize=(12, 8)):
     """
     Creates a Violinplot with stripplot showing the distribution density of data as well
+    :param data: Dataframe
     :param x: X data
     :param y: y data
-    :param df: Dataframe
     :param hue: hue column to be used
     :param title: Title of the plot
     :param xlabel: X label name
@@ -153,15 +154,68 @@ def strip_violinplot(x, y, df, hue, title="Data Distribution", xlabel=None, ylab
     :param figsize: figsize
     """
     fig, ax = plt.subplots(figsize=figsize)
-    ax = sns.stripplot(x=x, y=x, data=df
+    ax = sns.stripplot(x=x, y=y, data=data
                        , hue=hue, jitter=0.2, size=2.5)
-    ax = sns.violinplot(x=x, y=y, data=df)
+    ax = sns.violinplot(x=x, y=y, data=data)
     if xlabel is None:
-        xlabel = df[x].name
-    if ylabel is None:
-        ylabel = df[y].name
+        xlabel = data[x].name
+    if y and ylabel is None:
+        ylabel = data[y].name
     ax.set(title=title, xlabel=xlabel, ylabel=ylabel)
     _ = plt.show()
+
+
+def plot_stripviolens(df, cols, figsize=(20, 20)):
+    """Plot the subplots of violinplot and stripplot in 3 columns"""
+    import math
+    ncols = 3
+    nrows = math.ceil(len(cols) / ncols)
+
+    fig, axs = plt.subplots(nrows, ncols, figsize=figsize)
+    fig.tight_layout()
+
+    purple_color = "#b753e6"
+    for i, colname in enumerate(cols):
+        row = int(i / ncols)
+        col = i % ncols
+        sns.stripplot(data=df, x=colname, ax=axs[row][col], color=purple_color, alpha=0.5)
+        sns.violinplot(data=df, x=colname, ax=axs[row][col])
+        axs[row][col].set(xlabel=colname)
+
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.5)
+
+
+def plot_boxes(df, cols, figsize=(20, 16)):
+    """Plot the subplots of boxplots in 3 columns"""
+    import math
+    ncols = 3
+    nrows = math.ceil(len(cols) / ncols)
+
+    fig, axs = plt.subplots(nrows, ncols, figsize=figsize)
+    fig.tight_layout()
+
+    for i, colname in enumerate(cols):
+        row = int(i / ncols)
+        col = i % ncols
+        sns.boxplot(x=df[colname], ax=axs[row][col]).set(xlabel=colname)
+
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.2, hspace=0.5)
+
+
+def qq_plot(df, features):
+    """
+    Plot a Quantile to Quantile plot for the features
+    :param df:
+    :param features:
+    """
+    import scipy.stats as stats
+    import pylab
+    plt.figure(figsize=(10, 6))
+    plt.subplot(1, 2, 1)
+    df[features].hist()
+    plt.subplot(1, 2, 2)
+    stats.probplot(df[features], dist='norm', plot=pylab)
+    plt.show()
 
 
 def grouped_bar(df, title, figsize=(20, 8)):
@@ -239,14 +293,14 @@ def value_count_bar(data, title=None, normalize=True):
     plt.show()
 
 
-def plot_confusion_matrix(cf_matrix_data, target_names,
+def plot_confusion_matrix(cnf_matrix_data, target_names,
                           title='Confusion matrix'):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
-    from sklearn.metrics import confusion_matrix
-    df_cm = pd.DataFrame(cf_matrix_data, columns=target_names, index=target_names).astype('float')
+    # from sklearn.metrics import confusion_matrix
+    df_cm = pd.DataFrame(cnf_matrix_data, columns=target_names, index=target_names).astype('float')
 
     df_cm.index.name = 'Actual'
     df_cm.columns.name = 'Predicted'
@@ -263,19 +317,9 @@ def plot_confusion_matrix(cf_matrix_data, target_names,
     plt.xlabel('Predicted', color='crimson', fontsize=20)
 
 
-def print_confusion_matrix(model, X_test, y_test, target_names=None, title="Confusion Matrix"):
-    """ Method to print and plot Confusion matrix, F1 Score """
-    from sklearn.metrics import classification_report, confusion_matrix, f1_score
-    y_pred_classes = np.argmax(model.predict(X_test), axis=1)  # Multiclass classification
-    y_true_classes = np.argmax(y_test, axis=1)  # Multiclass classification
-    print(classification_report(y_true_classes, y_pred_classes, target_names=target_names))
-    plot_confusion_matrix(confusion_matrix(y_true_classes, y_pred_classes),
-                          target_names, title)
-
-
 def plot_loss_acc(history, train_score, test_score, batch_size=None):
     """
-    Method to plot the Loss and Accurracy with the given History dataframe as input
+    Method to plot the Loss and Accuracy with the given History dataframe as input
     """
     history_df = pd.DataFrame(history.history)
     # train_loss, train_accuracy = train_score[0], train_score[1]
