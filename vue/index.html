@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Vue</title>
+    <style type="text/css">
+        .box {
+            background-color: purple;
+            height: 200px;
+            width: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <button>Toggle</button>
+    </div>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+        let app = Vue.createApp({
+            data: { isVisible: true },
+            methods: {
+                toggleBox: function () {
+                    this.isVisible = !this.isVisible;
+                }
+            }
+        })
+
+        app.mount()
+    </script>
+</body>
+
+</html>
